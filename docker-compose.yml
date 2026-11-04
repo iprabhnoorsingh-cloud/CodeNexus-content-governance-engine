@@ -1,0 +1,21 @@
+services:
+  ghost-db:
+    image: pgvector/pgvector:pg16
+    container_name: ghost-pgvector-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ghost_user
+      POSTGRES_PASSWORD: ghost_pass
+      POSTGRES_DB: ghost_kb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghost_user -d ghost_kb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
