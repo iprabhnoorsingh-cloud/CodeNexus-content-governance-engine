@@ -7,7 +7,7 @@ RULE_DEFINITIONS: List[Dict[str, Any]] = [
     {
         "id": "RULE_FIN_001",
         "pattern": re.compile(
-            r"\b(?:100%\s{1,4}guaranteed|guaranteed\s{1,4}(?:returns?|profits?|yields?|apy)|zero[- ]risk\s{1,4}(?:investment|returns?|yields?))\b",
+            r"\b(?:100%\s{1,4}guaranteed(?:\s{1,4}(?:returns?|profits?|yields?|apy))?|guaranteed\s{1,4}(?:returns?|profits?|yields?|apy)|zero[- ]risk\s{1,4}(?:investment|returns?|yields?))\b",
             re.IGNORECASE,
         ),
         "severity": RuleSeverity.BLOCKER,
@@ -66,7 +66,6 @@ RULE_DEFINITIONS: List[Dict[str, Any]] = [
     },
 ]
 
-
 def run_stage1_audit(text: str) -> Stage1AuditResponse:
     start_time = time.perf_counter()
     violations: List[RuleViolation] = []
@@ -86,6 +85,7 @@ def run_stage1_audit(text: str) -> Stage1AuditResponse:
             )
 
     violations.sort(key=lambda v: v.start_char)
+
     blocker_count = sum(1 for v in violations if v.severity == RuleSeverity.BLOCKER)
     warning_count = sum(1 for v in violations if v.severity == RuleSeverity.WARNING)
     stage1_latency_ms = round((time.perf_counter() - start_time) * 1000, 3)
@@ -97,4 +97,3 @@ def run_stage1_audit(text: str) -> Stage1AuditResponse:
         violations=violations,
         stage1_latency_ms=stage1_latency_ms,
     )
-
