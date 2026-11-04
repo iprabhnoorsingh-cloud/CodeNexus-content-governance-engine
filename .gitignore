@@ -1,0 +1,18 @@
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Environment secrets
+.env
+.env.local
+
+# macOS system files
+.DS_Store
+
+# Node/Next.js (for frontend)
+node_modules/
+.next/
+dist/
