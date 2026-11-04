@@ -2,8 +2,15 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.schemas import AuditRequest, Stage1AuditResponse, ErrorResponse, KnowledgeBaseResponse
+from app.schemas import (
+    AuditRequest,
+    Stage1AuditResponse,
+    FullAuditResponse,
+    ErrorResponse,
+    KnowledgeBaseResponse,
+)
 from app.stage1_rules import run_stage1_audit
+from app.stage2_rag import run_full_audit
 from app.database import get_all_kb_chunks
 
 app = FastAPI(title="GHOST Enterprise Content Governance Engine", version="1.0.0")
@@ -36,6 +43,11 @@ async def health():
 @app.post("/api/v1/audit/stage1", response_model=Stage1AuditResponse)
 async def audit_stage1(request: AuditRequest):
     return run_stage1_audit(request.text)
+
+
+@app.post("/api/v1/audit/full", response_model=FullAuditResponse)
+async def audit_full(request: AuditRequest):
+    return run_full_audit(request)
 
 
 @app.get("/api/v1/kb/chunks", response_model=KnowledgeBaseResponse)

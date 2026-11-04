@@ -67,17 +67,34 @@ def retrieve_top_k_chunks(
 
 
 def get_all_kb_chunks() -> List[KnowledgeChunkItem]:
-    with SessionLocal() as session:
-        stmt = select(KnowledgeChunk).order_by(KnowledgeChunk.chunk_id.asc())
-        rows = session.scalars(stmt).all()
-        return [
-            KnowledgeChunkItem(
-                chunk_id=row.chunk_id,
-                doc_title=row.doc_title,
-                section_ref=row.section_ref,
-                category=row.category,
-                content=row.content,
-            )
-            for row in rows
-        ]
+    try:
+        with SessionLocal() as session:
+            stmt = select(KnowledgeChunk).order_by(KnowledgeChunk.chunk_id.asc())
+            rows = session.scalars(stmt).all()
+            if rows:
+                return [
+                    KnowledgeChunkItem(
+                        chunk_id=row.chunk_id,
+                        doc_title=row.doc_title,
+                        section_ref=row.section_ref,
+                        category=row.category,
+                        content=row.content,
+                    )
+                    for row in rows
+                ]
+    except Exception:
+        pass
+
+    from app.seed_kb import RAW_CHUNKS
+
+    return [
+        KnowledgeChunkItem(
+            chunk_id=chunk["chunk_id"],
+            doc_title=chunk["doc_title"],
+            section_ref=chunk["section_ref"],
+            category=chunk["category"],
+            content=chunk["content"],
+        )
+        for chunk in RAW_CHUNKS
+    ]
 
