@@ -326,12 +326,13 @@ def run_full_audit(request: AuditRequest) -> FullAuditResponse:
 
     stage2_latency_ms = round((time.perf_counter() - stage2_start) * 1000, 3)
     total_latency_ms = round(stage1_res.stage1_latency_ms + stage2_latency_ms, 3)
+    is_injection = detect_prompt_injection(request.text)
 
-    stage2_passed = (
-        len(claim_audits) > 0
-        and all(c.verdict == ClaimVerdict.VERIFIED for c in claim_audits)
-        and not detect_prompt_injection(request.text)
-    )
+    has_contradictions = any(c.verdict == ClaimVerdict.CONTRADICTED for c in claim_audits)
+    has_ungrounded = any(c.verdict == ClaimVerdict.UNGROUNDED for c in claim_audits)
+
+    stage2_passed = not has_contradictions and not has_ungrounded and not is_injection
+
     overall_compliant = stage1_res.passed and stage2_passed
     governance_state = (
         GovernanceState.COMPLIANCE_APPROVED
@@ -339,16 +340,20 @@ def run_full_audit(request: AuditRequest) -> FullAuditResponse:
         else GovernanceState.ACTION_REQUIRED
     )
 
+    injection_penalty = 100.0 if is_injection else 0.0
     hallucination_risk_score = min(
         100.0,
         round(
             stage1_res.blocker_count * 25.0
             + stage1_res.warning_count * 10.0
             + sum(30.0 for c in claim_audits if c.verdict == ClaimVerdict.CONTRADICTED)
-            + sum(15.0 for c in claim_audits if c.verdict == ClaimVerdict.UNGROUNDED),
+            + sum(15.0 for c in claim_audits if c.verdict == ClaimVerdict.UNGROUNDED)
+            + injection_penalty,
             1,
         ),
     )
+
+    
 
     return FullAuditResponse(
         governance_state=governance_state,
