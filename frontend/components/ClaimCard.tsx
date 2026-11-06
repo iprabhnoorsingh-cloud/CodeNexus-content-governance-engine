@@ -174,33 +174,22 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
                 )}
               </button>
 
-                            {onApplyFix && (
-                <button
-                  onClick={() => {
-                    onApplyFix(
-                      claim.original_span,
-                      claim.suggested_remediation || ""
-                    );
-                    setIsApplied(true);
-                    setTimeout(() => setIsApplied(false), 2000);
-                  }}
-                  className={`flex items-center gap-1 px-2 py-1 rounded font-semibold text-[10px] transition ${
-                    isApplied
-                      ? "bg-emerald-500 text-slate-950"
-                      : "bg-cyan-500 hover:bg-cyan-400 text-slate-950"
-                  }`}
+                          {onApplyFix && claim.suggested_remediation && !isApplied && (
+              <button
+                onClick={() => {
+                  onApplyFix(
+                    claim.original_span,
+                    claim.suggested_remediation || ""
+                  );
+                  setIsApplied(true);
+                }}
+                className="flex items-center gap-1 px-2 py-1 rounded font-semibold text-[10px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
+              >
+                Apply Fix
+              </button>
+            )}
 
-                >
-                  {isApplied ? (
-                    <>
-                      <Check className="w-3 h-3 text-slate-950" />
-                      <span>Applied</span>
-                    </>
-                  ) : (
-                    <span>Apply Fix</span>
-                  )}
-                </button>
-              )}
+
 
             </div>
           </div>
