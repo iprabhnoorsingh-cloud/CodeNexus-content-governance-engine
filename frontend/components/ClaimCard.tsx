@@ -22,6 +22,8 @@ interface ClaimCardProps {
 export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
+  const [isExcerptExpanded, setIsExcerptExpanded] = useState(false);
+
 
 
   const getVerdictTheme = (verdict: ClaimVerdict) => {
