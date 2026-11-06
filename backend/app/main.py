@@ -45,6 +45,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 @app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "ok", "service": "ghost-governance-engine"}
 

@@ -1,13 +1,32 @@
 import { FullAuditResponse, KnowledgeBaseResponse } from "@/types";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+function getBackendUrl(): string {
+  if (typeof window === "undefined") {
+    return (
+      process.env.BACKEND_URL ||
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      "http://localhost:8000"
+    ).replace(/\/$/, "");
+  }
+
+  const publicUrl = (process.env.NEXT_PUBLIC_BACKEND_URL || "").replace(
+    /\/$/,
+    ""
+  );
+  if (
+    !publicUrl ||
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(publicUrl)
+  ) {
+    return "";
+  }
+  return publicUrl;
+}
 
 export async function runFullAudit(
   text: string,
   docType: string = "general"
 ): Promise<FullAuditResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/audit/full`, {
+  const response = await fetch(`${getBackendUrl()}/api/v1/audit/full`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -30,7 +49,7 @@ export async function runFullAudit(
 }
 
 export async function fetchKnowledgeBase(): Promise<KnowledgeBaseResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/v1/kb/chunks`, {
+  const response = await fetch(`${getBackendUrl()}/api/v1/kb/chunks`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -50,7 +69,7 @@ export async function fetchKnowledgeBase(): Promise<KnowledgeBaseResponse> {
 
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${BACKEND_URL}/health`, {
+    const response = await fetch(`${getBackendUrl()}/api/health`, {
       method: "GET",
       cache: "no-store",
     });
