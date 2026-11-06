@@ -20,8 +20,9 @@ interface ClaimCardProps {
 }
 
 export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
-  const [isExcerptExpanded, setIsExcerptExpanded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isApplied, setIsApplied] = useState(false);
+
 
   const getVerdictTheme = (verdict: ClaimVerdict) => {
     switch (verdict) {
@@ -171,19 +172,34 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
                 )}
               </button>
 
-              {onApplyFix && (
+                            {onApplyFix && (
                 <button
-                  onClick={() =>
+                  onClick={() => {
                     onApplyFix(
                       claim.original_span,
                       claim.suggested_remediation || ""
-                    )
-                  }
-                  className="px-2 py-1 rounded bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-[10px] transition"
+                    );
+                    setIsApplied(true);
+                    setTimeout(() => setIsApplied(false), 2000);
+                  }}
+                  className={`flex items-center gap-1 px-2 py-1 rounded font-semibold text-[10px] transition ${
+                    isApplied
+                      ? "bg-emerald-500 text-slate-950"
+                      : "bg-cyan-500 hover:bg-cyan-400 text-slate-950"
+                  }`}
+
                 >
-                  Apply Fix
+                  {isApplied ? (
+                    <>
+                      <Check className="w-3 h-3 text-slate-950" />
+                      <span>Applied</span>
+                    </>
+                  ) : (
+                    <span>Apply Fix</span>
+                  )}
                 </button>
               )}
+
             </div>
           </div>
           <p className="text-xs text-cyan-100 font-mono leading-relaxed">

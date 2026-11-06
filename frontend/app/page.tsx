@@ -69,37 +69,62 @@ export default function AuditDashboard() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleRunAudit]);
 
-  // Apply single fix
+    // Apply single fix
   const handleApplySingleFix = (targetText: string, replacementText: string) => {
     if (!targetText || !replacementText) return;
-    setDraftText((prev) => prev.replace(targetText, replacementText));
+    setDraftText((prev) => {
+      if (prev.includes(targetText)) {
+        return prev.replace(targetText, replacementText);
+      }
+      // Fallback if a Stage 1 fix already modified part of targetText
+      let adjustedTarget = targetText;
+      if (auditResult) {
+        for (const v of auditResult.rule_violations) {
+          if (v.matched_text && v.suggested_fix) {
+            adjustedTarget = adjustedTarget.replace(v.matched_text, v.suggested_fix);
+          }
+        }
+      }
+      return prev.replace(adjustedTarget, replacementText);
+    });
   };
 
-  // Apply all remediations across Stage 1 violations and Stage 2 contradicted claims
+  // Apply all remediations across Stage 2 non-verified claims and Stage 1 violations
   const handleApplyAllRemediations = () => {
     if (!auditResult) return;
     let newText = draftText;
 
-    // First replace Stage 1 violations
+    // First replace Stage 2 claims (using full sentence spans before Stage 1 mutates substrings)
+    for (const claim of auditResult.claim_audits) {
+      if (
+        (claim.verdict === "CONTRADICTED" || claim.verdict === "UNGROUNDED") &&
+        claim.original_span &&
+        claim.suggested_remediation
+      ) {
+        if (newText.includes(claim.original_span)) {
+          newText = newText.replace(claim.original_span, claim.suggested_remediation);
+        } else {
+          let adjustedSpan = claim.original_span;
+          for (const v of auditResult.rule_violations) {
+            if (v.matched_text && v.suggested_fix) {
+              adjustedSpan = adjustedSpan.replace(v.matched_text, v.suggested_fix);
+            }
+          }
+          newText = newText.replace(adjustedSpan, claim.suggested_remediation);
+        }
+      }
+    }
+
+    // Then replace any remaining Stage 1 violations
     for (const violation of auditResult.rule_violations) {
       if (violation.matched_text && violation.suggested_fix) {
         newText = newText.replace(violation.matched_text, violation.suggested_fix);
       }
     }
 
-    // Then replace Stage 2 contradicted claims
-    for (const claim of auditResult.claim_audits) {
-      if (
-        claim.verdict === "CONTRADICTED" &&
-        claim.original_span &&
-        claim.suggested_remediation
-      ) {
-        newText = newText.replace(claim.original_span, claim.suggested_remediation);
-      }
-    }
-
     setDraftText(newText);
   };
+
 
   const handleCopyFix = (id: string, text: string) => {
     navigator.clipboard.writeText(text);

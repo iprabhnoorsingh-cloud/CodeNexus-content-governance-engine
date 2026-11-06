@@ -174,10 +174,11 @@ def verify_claim_against_context(
     verdict = ClaimVerdict.UNGROUNDED
     confidence_score = 0.85
     explanation = f"Claim could not be conclusively verified against {citation_source}."
-    suggested_remediation: Optional[str] = f"Align statement with {citation_source}: {retrieved_excerpt}"
+    suggested_remediation: Optional[str] = retrieved_excerpt
+
 
     if chunk_id == "KB-001":
-        if re.search(r"\b(?:99\.99%|99\.999%|100%|24\s*hours?)\b", claim_lower):
+        if re.search(r"\b(?:99\.99%|99\.999%|100%|24\s*hours?\b)", claim_lower):
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.96
             explanation = f"Contradicts {citation_source}: SLA guarantees 99.9% monthly uptime and 48 hours maintenance notice."
@@ -189,7 +190,7 @@ def verify_claim_against_context(
             suggested_remediation = None
 
     elif chunk_id == "KB-002":
-        if re.search(r"\b(?:50%|100%|refund)\b", claim_lower):
+        if re.search(r"\b(?:50%|100%|refund\b)", claim_lower):
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.96
             explanation = f"Contradicts {citation_source}: service credits are 10% (<99.9% uptime) up to a maximum of 30% (<99.0% uptime)."
@@ -251,7 +252,7 @@ def verify_claim_against_context(
             suggested_remediation = None
 
     elif chunk_id == "KB-007":
-        has_bad_rate = bool(re.search(r"\b(?:8%|10%|12%)\b", claim_lower))
+        has_bad_rate = bool(re.search(r"\b(?:8%|10%|12%)", claim_lower))
         has_fixed_or_guaranteed = "fixed" in claim_lower or (
             "guaranteed" in claim_lower and "not guaranteed" not in claim_lower
         )
@@ -259,7 +260,7 @@ def verify_claim_against_context(
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.97
             explanation = f"Contradicts {citation_source}: APY is 4.75% variable as of Q4 2026 and is not guaranteed."
-            suggested_remediation = "offers a variable annual percentage yield (APY) of 4.75% as of Q4 2026, subject to central bank rate changes and not guaranteed."
+            suggested_remediation = "The Acme Treasury Reserve Account offers a variable annual percentage yield (APY) of 4.75% as of Q4 2026, subject to central bank rate changes and not guaranteed."
         elif "4.75%" in claim_lower:
             verdict = ClaimVerdict.VERIFIED
             confidence_score = 0.96
