@@ -64,3 +64,4 @@ def get_kb_chunks():
 @app.post("/api/v1/audit/full", response_model=FullAuditResponse)
 def audit_full(request: AuditRequest):
     return run_full_audit(request)
+

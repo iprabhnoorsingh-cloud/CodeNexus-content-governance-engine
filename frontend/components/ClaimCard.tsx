@@ -16,13 +16,20 @@ import { AtomicClaimAudit, ClaimVerdict } from "@/types";
 
 interface ClaimCardProps {
   claim: AtomicClaimAudit;
-  onApplyFix?: (originalSpan: string, fixText: string) => void;
+  onApplyFix?: (originalSpan: string, fixText: string, claimId?: string) => void;
+  isApplied?: boolean;
 }
 
-export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
+export const ClaimCard: React.FC<ClaimCardProps> = ({
+  claim,
+  onApplyFix,
+  isApplied: isAppliedProp,
+}) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
   const [isExcerptExpanded, setIsExcerptExpanded] = useState(false);
+
+  const applied = Boolean(isAppliedProp || isApplied);
 
 
 
@@ -174,28 +181,44 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onApplyFix }) => {
                 )}
               </button>
 
-                          {onApplyFix && claim.suggested_remediation && !isApplied && (
-              <button
-                onClick={() => {
-                  onApplyFix(
-                    claim.original_span,
-                    claim.suggested_remediation || ""
-                  );
-                  setIsApplied(true);
-                }}
-                className="flex items-center gap-1 px-2 py-1 rounded font-semibold text-[10px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
-              >
-                Apply Fix
-              </button>
-            )}
+              {onApplyFix && claim.suggested_remediation && !applied && (
+                <button
+                  onClick={() => {
+                    onApplyFix(
+                      claim.original_span,
+                      claim.suggested_remediation || "",
+                      claim.claim_id
+                    );
+                    setIsApplied(true);
+                  }}
+                  className="flex items-center gap-1 px-2 py-1 rounded font-semibold text-[10px] bg-cyan-500 hover:bg-cyan-400 text-slate-950 transition"
+                >
+                  Apply Fix
+                </button>
+              )}
 
 
 
             </div>
           </div>
-          <p className="text-xs text-cyan-100 font-mono leading-relaxed">
-            {claim.suggested_remediation}
-          </p>
+          <div className="space-y-2">
+            <div>
+              <div className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-1">
+                BEFORE (ORIGINAL)
+              </div>
+              <p className="text-xs font-mono bg-rose-950/40 border border-rose-500/30 text-rose-300 line-through p-2.5 rounded-lg leading-relaxed">
+                {claim.original_span}
+              </p>
+            </div>
+            <div>
+              <div className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+                AFTER (APPROVED FIX)
+              </div>
+              <p className="text-xs font-mono bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 p-2.5 rounded-lg leading-relaxed">
+                {claim.suggested_remediation}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
