@@ -32,7 +32,7 @@ PROMPT_INJECTION_PATTERN = re.compile(
     r"(?i)\b(?:ignore\s+(?:all\s+)?(?:previous|prior)\s+instructions|system\s+prompt|mark\s+all\s+claims\s+verified|you\s+are\s+now\s+in\s+developer\s+mode)\b"
 )
 
-SENTENCE_BOUNDARY_PATTERN = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"'])|\n+")
+SENTENCE_BOUNDARY_PATTERN = re.compile(r"(?<=[.!?])\s+(?=[A-Za-z0-9\"'])|\n+")
 
 FACTUAL_SIGNAL_PATTERN = re.compile(
     r"(?i)(?:\d+|%|\b(?:sla|uptime|availability|maintenance|credit|credits|refund|downtime|"
@@ -146,7 +146,7 @@ def verify_claim_against_context(
             retrieved_excerpt=None,
             similarity_score=None,
             explanation="Adversarial prompt injection detected: attempt to bypass governance verification.",
-            suggested_remediation="[Remove adversarial prompt injection instructions]",
+            suggested_remediation="",
         )
 
     if len(retrieved_chunks) == 0:
@@ -162,7 +162,7 @@ def verify_claim_against_context(
             retrieved_excerpt=None,
             similarity_score=None,
             explanation="No corroborating document found in enterprise knowledge base above 0.45 similarity threshold.",
-            suggested_remediation="[Remove unverified claim or provide approved source citation]",
+            suggested_remediation="",
         )
 
     top_chunk = retrieved_chunks[0]
@@ -194,7 +194,7 @@ def verify_claim_against_context(
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.96
             explanation = f"Contradicts {citation_source}: service credits are 10% (<99.9% uptime) up to a maximum of 30% (<99.0% uptime)."
-            suggested_remediation = "customers receive a 10% service credit below 99.9% uptime and up to a maximum 30% service credit below 99.0%."
+            suggested_remediation = "In the event monthly uptime falls below 99.9%, customers receive a 10% service credit, and up to a maximum 30% service credit below 99.0%."
         elif "10%" in claim_lower or "30%" in claim_lower:
             verdict = ClaimVerdict.VERIFIED
             confidence_score = 0.96
@@ -206,7 +206,7 @@ def verify_claim_against_context(
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.97
             explanation = f"Contradicts {citation_source}: platform backend uses Python 3.11, FastAPI, and PostgreSQL 16 (pgvector), with Next.js 14 and TypeScript."
-            suggested_remediation = "built using Python 3.11 with FastAPI, PostgreSQL 16 (pgvector), and Next.js 14 with TypeScript."
+            suggested_remediation = "The core platform backend is built using Python 3.11 with FastAPI and PostgreSQL 16 (pgvector), while the web client is built on Next.js 14 and TypeScript."
         elif re.search(r"\b(?:python\s*3\.11|fastapi|postgresql\s*16|pgvector|next\.?js\s*14|typescript)\b", claim_lower):
             verdict = ClaimVerdict.VERIFIED
             confidence_score = 0.97
@@ -218,7 +218,7 @@ def verify_claim_against_context(
             verdict = ClaimVerdict.CONTRADICTED
             confidence_score = 0.96
             explanation = f"Contradicts {citation_source}: ingestion gateway sustains 12,000 RPS with p95 latency under 45ms."
-            suggested_remediation = "sustains up to 12,000 requests per second (RPS) per cluster node with a p95 latency under 45 milliseconds."
+            suggested_remediation = "The ingestion gateway sustains up to 12,000 requests per second (RPS) per cluster node with a p95 latency under 45 milliseconds."
         elif re.search(r"\b(?:12,000|45\s*ms|45\s*milliseconds)\b", claim_lower):
             verdict = ClaimVerdict.VERIFIED
             confidence_score = 0.96
