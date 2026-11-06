@@ -31,6 +31,8 @@ export default function AuditDashboard() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isKbModalOpen, setIsKbModalOpen] = useState(false);
   const [copiedRuleId, setCopiedRuleId] = useState<string | null>(null);
+  const [appliedRuleIds, setAppliedRuleIds] = useState<string[]>([]);
+
 
   const handleSelectPreset = (preset: PresetItem) => {
     setSelectedPresetId(preset.id);
@@ -70,7 +72,8 @@ export default function AuditDashboard() {
   }, [handleRunAudit]);
 
     // Apply single fix
-  const handleApplySingleFix = (targetText: string, replacementText: string) => {
+    // Apply single fix
+  const handleApplySingleFix = (targetText: string, replacementText: string, ruleId?: string) => {
     if (!targetText || !replacementText) return;
     setDraftText((prev) => {
       if (prev.includes(targetText)) {
@@ -87,7 +90,12 @@ export default function AuditDashboard() {
       }
       return prev.replace(adjustedTarget, replacementText);
     });
+
+    if (ruleId) {
+      setAppliedRuleIds((prev) => [...prev, ruleId]);
+    }
   };
+
 
   // Apply all remediations across Stage 2 non-verified claims and Stage 1 violations
   const handleApplyAllRemediations = () => {
@@ -455,17 +463,21 @@ export default function AuditDashboard() {
                                     </>
                                   )}
                                 </button>
+                                                              {!appliedRuleIds.includes(violation.rule_id) && (
                                 <button
                                   onClick={() =>
                                     handleApplySingleFix(
                                       violation.matched_text,
-                                      violation.suggested_fix
+                                      violation.suggested_fix,
+                                      violation.rule_id
                                     )
                                   }
                                   className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-300 font-semibold text-[10px] transition"
                                 >
                                   Apply Fix
                                 </button>
+                              )}
+
                               </div>
                             </div>
 
