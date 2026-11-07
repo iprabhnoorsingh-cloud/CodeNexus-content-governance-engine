@@ -94,7 +94,9 @@ export default function AuditDashboard() {
       : replacementText;
 
     let newText = draftText;
-    if (newText.includes(targetText)) {
+    if (cleanReplacement === "" && newText.includes(`${targetText}.`)) {
+      newText = newText.replace(`${targetText}.`, "");
+    } else if (newText.includes(targetText)) {
       newText = newText.replace(targetText, cleanReplacement);
     } else {
       // Fallback if a Stage 1 fix already modified part of targetText
@@ -104,7 +106,7 @@ export default function AuditDashboard() {
           if (v.matched_text && v.suggested_fix) {
             adjustedTarget = adjustedTarget.replace(
               v.matched_text,
-              v.suggested_fix
+              v.suggested_fix.startsWith("[Remove") ? "" : v.suggested_fix
             );
           }
         }
@@ -190,10 +192,14 @@ export default function AuditDashboard() {
     const nextRuleIds = [...appliedRuleIds];
     for (const violation of auditResult.rule_violations) {
       if (violation.matched_text && violation.suggested_fix) {
-        newText = newText.replace(
-          violation.matched_text,
-          violation.suggested_fix
-        );
+        const cleanRuleFix = violation.suggested_fix.startsWith("[Remove")
+          ? ""
+          : violation.suggested_fix;
+        if (cleanRuleFix === "" && newText.includes(`${violation.matched_text}.`)) {
+          newText = newText.replace(`${violation.matched_text}.`, "");
+        } else {
+          newText = newText.replace(violation.matched_text, cleanRuleFix);
+        }
         if (!nextRuleIds.includes(violation.rule_id)) {
           nextRuleIds.push(violation.rule_id);
         }
@@ -265,26 +271,59 @@ export default function AuditDashboard() {
           <div className="lg:col-span-5 space-y-4">
             <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 shadow-xl space-y-4">
               {/* Document Type & Controls Header */}
-              <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-800">
-                <div>
-                  <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
-                    Document Context
-                  </label>
-                  <p className="text-[11px] text-slate-400">
-                    Policy scope applied during Stage 1 audit
-                  </p>
+              <div className="pb-3 border-b border-slate-800">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block">
+                      Document Context
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Policy scope applied during Stage 1 audit
+                    </p>
+                  </div>
+
+                  <select
+                    value={docType}
+                    onChange={async (e) => {
+                      const nextDocType = e.target.value;
+                      setDocType(nextDocType);
+                      if (auditResult && draftText.trim()) {
+                        try {
+                          const updated = await runFullAudit(
+                            draftText,
+                            nextDocType
+                          );
+                          setAuditResult(updated);
+                        } catch {
+                          // Keep current UI state if background re-audit fails
+                        }
+                      }
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="general">general</option>
+                    <option value="fintech_promo">fintech_promo</option>
+                    <option value="saas_sla">saas_sla</option>
+                    <option value="press_release">press_release</option>
+                  </select>
                 </div>
 
-                <select
-                  value={docType}
-                  onChange={(e) => setDocType(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-950 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500"
-                >
-                  <option value="general">general</option>
-                  <option value="fintech_promo">fintech_promo</option>
-                  <option value="saas_sla">saas_sla</option>
-                  <option value="press_release">press_release</option>
-                </select>
+                {docType === "fintech_promo" ? (
+                  <div className="text-[11px] font-mono text-cyan-400/90 mt-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                    Active Policies: SEC/FINRA APY Advertising &amp; Universal Privacy
+                  </div>
+                ) : docType === "saas_sla" ? (
+                  <div className="text-[11px] font-mono text-emerald-400/90 mt-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Active Policies: Uptime SLAs, Tech Specs &amp; Universal Privacy
+                  </div>
+                ) : (
+                  <div className="text-[11px] font-mono text-slate-400 mt-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    Active Policies: Universal Enterprise Compliance &amp; Security
+                  </div>
+                )}
               </div>
 
               {/* Textarea Editor */}

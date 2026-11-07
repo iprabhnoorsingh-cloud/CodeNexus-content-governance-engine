@@ -279,6 +279,20 @@ def verify_claim_against_context(
             explanation = f"Verified against {citation_source}: settlement window, cap, and fee match institutional terms."
             suggested_remediation = None
 
+    scope_prefix = ""
+    if citation_source:
+        if "fintech_yield_terms.md" in citation_source:
+            scope_prefix = "[Scope: FinTech Regulation] "
+        elif "sla_policy_2026.md" in citation_source:
+            scope_prefix = "[Scope: Enterprise SLA] "
+        elif (
+            "system_architecture.md" in citation_source
+            or "security_compliance.md" in citation_source
+        ):
+            scope_prefix = "[Scope: Core Infrastructure] "
+
+    explanation = f"{scope_prefix}{explanation}"
+
     return AtomicClaimAudit(
         claim_id=claim_item["claim_id"],
         claim_text=claim_text,
@@ -296,7 +310,9 @@ def verify_claim_against_context(
 
 
 def run_full_audit(request: AuditRequest) -> FullAuditResponse:
-    stage1_res: Stage1AuditResponse = run_stage1_audit(request.text)
+    stage1_res: Stage1AuditResponse = run_stage1_audit(
+        request.text, doc_type=request.doc_type
+    )
 
     if not stage1_res.passed and not request.run_stage2_if_stage1_blocked:
         risk_score = min(

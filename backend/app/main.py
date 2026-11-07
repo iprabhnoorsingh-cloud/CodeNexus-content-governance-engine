@@ -52,7 +52,7 @@ def health_check():
 
 @app.post("/api/v1/audit/stage1", response_model=Stage1AuditResponse)
 def audit_stage1(request: AuditRequest):
-    return run_stage1_audit(request.text)
+    return run_stage1_audit(request.text, doc_type=request.doc_type)
 
 
 @app.get("/api/v1/kb/chunks", response_model=KnowledgeBaseResponse)

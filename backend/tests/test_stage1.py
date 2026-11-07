@@ -68,3 +68,28 @@ def test_empty_text_validation_error():
     )
     assert response.status_code == 422
 
+
+def test_context_aware_rule_scoping():
+    text = "Our platform offers 100% guaranteed returns. We never log any data."
+
+    # Under fintech_promo: both RULE_FIN_001 and RULE_PRIV_004 trigger
+    res_fintech = client.post(
+        "/api/v1/audit/stage1",
+        json={"text": text, "doc_type": "fintech_promo"},
+    )
+    assert res_fintech.status_code == 200
+    fintech_ids = [v["rule_id"] for v in res_fintech.json()["violations"]]
+    assert "RULE_FIN_001" in fintech_ids
+    assert "RULE_PRIV_004" in fintech_ids
+
+    # Under saas_sla: RULE_FIN_001 is skipped, RULE_PRIV_004 still triggers
+    res_sla = client.post(
+        "/api/v1/audit/stage1",
+        json={"text": text, "doc_type": "saas_sla"},
+    )
+    assert res_sla.status_code == 200
+    sla_ids = [v["rule_id"] for v in res_sla.json()["violations"]]
+    assert "RULE_FIN_001" not in sla_ids
+    assert "RULE_PRIV_004" in sla_ids
+
+
