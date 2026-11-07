@@ -603,29 +603,29 @@ export default function AuditDashboard() {
 
                 {/* Stage 2: Atomic Claim Audits */}
                 <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pb-3 border-b border-slate-800/70 mb-4">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                          Stage 2 Citation-Locked Claims
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="whitespace-nowrap font-bold text-slate-100 text-sm tracking-wide shrink-0">
+                          STAGE 2 CITATION — LOGGED CLAIMS
                         </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-indigo-950/60 text-indigo-300 border border-indigo-800/50 whitespace-nowrap">
                           {auditResult.claim_audits.length} Assertions
                         </span>
+                        <span className="text-[11px] font-mono text-slate-400 bg-slate-900/80 border border-slate-800 px-2 py-0.5 rounded-md whitespace-nowrap">
+                          Cosine threshold: 0.45
+                        </span>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-xs text-slate-400 mt-1">
                         Decomposed factual sentences grounded against pgvector knowledge chunks
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-mono text-slate-400">
-                        Cosine threshold: 0.45
-                      </span>
+                    <div className="flex items-center gap-2 shrink-0">
                       {hasUnappliedClaims && (
                         <button
                           onClick={handleApplyAllRemediations}
-                          className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition"
+                          className="h-8 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 whitespace-nowrap transition"
                         >
                           <CheckCheck className="w-3.5 h-3.5" />
                           <span>Apply All Fixes</span>
@@ -642,22 +642,22 @@ export default function AuditDashboard() {
                             ? "Generate Cryptographic Compliance Certificate"
                             : "Requires 100% Compliance Clearance"
                         }
-                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition border ${
+                        className={
                           auditResult.overall_compliant
-                            ? "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border-cyan-500/30 cursor-pointer"
-                            : "bg-slate-800/50 text-slate-500 border-slate-700/60 cursor-not-allowed opacity-75"
-                        }`}
+                            ? "h-8 px-3 py-1.5 text-xs font-medium bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-lg flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition"
+                            : "h-8 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-900/60 border border-slate-800/80 text-slate-500 cursor-not-allowed flex items-center gap-1.5 whitespace-nowrap transition"
+                        }
                       >
                         {auditResult.overall_compliant ? (
-                          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                          <>
+                            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>Generate Compliance Seal</span>
+                          </>
                         ) : (
-                          <Lock className="w-3.5 h-3.5 text-slate-500" />
-                        )}
-                        <span>Generate Compliance Seal</span>
-                        {!auditResult.overall_compliant && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-400 border border-slate-700/80">
-                            Requires 100% Compliance Clearance
-                          </span>
+                          <>
+                            <Lock className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Compliance Seal (Locked)</span>
+                          </>
                         )}
                       </button>
                     </div>
