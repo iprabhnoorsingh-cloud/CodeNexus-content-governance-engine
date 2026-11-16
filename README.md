@@ -17,7 +17,7 @@ Draft AI Copy / Content Ingestion
                │
                ▼
 ┌──────────────────────────────────────────────┐
-│  Stage 1: Deterministic Rule Engine (<50ms)   │
+│  Stage 1: Deterministic Rule Engine (<50ms)  │
 │  - ReDoS-safe bounded regex patterns         │
 │  - Regulatory financial return filters       │
 │  - Absolute SLA uptime & immunity blockers   │
@@ -31,7 +31,7 @@ Draft AI Copy / Content Ingestion
 │  Stage 2: Citation-Locked pgvector RAG       │
 │  - Prompt-injection heuristic guard          │
 │  - Atomic factual claim decomposition        │
-│  - 384-dimensional semantic embedding match │
+│  - 384-dimensional semantic embedding match  │
 │  - Cosine threshold gating (≥ 0.45)          │
 │  - Numeric/entity ground-truth verification  │
 └──────────────────────┬───────────────────────┘
